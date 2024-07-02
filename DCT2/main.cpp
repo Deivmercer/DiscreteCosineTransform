@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
+#include <opencv2/opencv.hpp>
 
 int main(int argc, char *argv[])
 {
@@ -19,5 +20,8 @@ int main(int argc, char *argv[])
     }
     MainWindow w;
     w.show();
+
+    qDebug(CV_VERSION);
+
     return a.exec();
 }
