@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "DiscreteCosineTransform.h"
 #include <QFileDialog>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -27,18 +29,36 @@ void MainWindow::on_selectImageButton_clicked()
     lastPath = getPath(filePath);
 }
 
-void MainWindow::setImagePreview(QString path)
+void MainWindow::on_runButton_clicked()
+{
+    cv::Mat c = DiscreteCosineTransform::DCT2(ui->filePathLineEdit->text());
+    cv::Mat result = DiscreteCosineTransform::IDCT2(c);
+
+    QImage image(result.data, result.cols, result.rows, QImage::Format_Grayscale8);
+    QPixmap resultImage = QPixmap::fromImage(image);
+    setPixmap(ui->resultPreviewLabel, resultImage);
+}
+
+void MainWindow::setImagePreview(const QString& path)
 {
     QPixmap pixmap(path);
     if (pixmap.isNull())
+    {
+        qDebug("Pixmap creation failed.");
         return;
+    }
 
-    int imageWidth = ui->imagePreviewLabel->width();
-    int imageHeight = ui->imagePreviewLabel->height();
-    ui->imagePreviewLabel->setPixmap(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
+    setPixmap(ui->imagePreviewLabel, pixmap);
 }
 
-QDir getPath(QString filePath)
+void MainWindow::setPixmap(QLabel* label, QPixmap pixmap)
+{
+    int imageWidth = label->width();
+    int imageHeight = label->height();
+    label->setPixmap(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
+}
+
+QDir getPath(const QString& filePath)
 {
     QFileInfo file(filePath);
     return file.absoluteDir();

@@ -20,6 +20,8 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        DiscreteCosineTransform.cpp
+        DiscreteCosineTransform.h
         ${TS_FILES}
 )
 

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDir>
+#include <QLabel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -20,11 +21,14 @@ class MainWindow : public QMainWindow
     private slots:
         void on_selectImageButton_clicked();
 
+        void on_runButton_clicked();
+
     private:
-        void setImagePreview(QString path);
+        void setImagePreview(const QString& path);
+        void setPixmap(QLabel* label, QPixmap pixmap);
         Ui::MainWindow *ui;
         QDir lastPath;
 };
 
-QDir getPath(QString filePath);
+QDir getPath(const QString& filePath);
 #endif // MAINWINDOW_H
