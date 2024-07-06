@@ -2,7 +2,6 @@
 #include "./ui_mainwindow.h"
 #include "DiscreteCosineTransform.h"
 #include <QFileDialog>
-#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -31,10 +30,31 @@ void MainWindow::on_selectImageButton_clicked()
 
 void MainWindow::on_runButton_clicked()
 {
-    cv::Mat c = DiscreteCosineTransform::DCT2(ui->filePathLineEdit->text());
-    cv::Mat result = DiscreteCosineTransform::IDCT2(c);
+    QString lineEditContent = ui->blockSizeLineEdit->text();
+    if (lineEditContent.isNull() || lineEditContent.isEmpty())
+    {
+        qDebug("Block size not set.");
+        return;
+    }
+    int F = lineEditContent.toInt();
 
-    QImage image(result.data, result.cols, result.rows, QImage::Format_Grayscale8);
+    lineEditContent = ui->thresholdLineEdit->text();
+    if (lineEditContent.isNull() || lineEditContent.isEmpty())
+    {
+        qDebug("Threshold not set.");
+        return;
+    }
+    int d = lineEditContent.toInt();
+    if (d < 0 || d > 2 * F - 2)
+    {
+        qDebug("Threshold out of range.");
+        return;
+    }
+
+    cv::Mat c = DiscreteCosineTransform::DCT2(ui->filePathLineEdit->text(), F, d);
+    DiscreteCosineTransform::IDCT2(c, F);
+
+    QImage image(c.data, c.cols, c.rows, QImage::Format_Grayscale8);
     QPixmap resultImage = QPixmap::fromImage(image);
     setPixmap(ui->resultPreviewLabel, resultImage);
 }

@@ -10,9 +10,9 @@
 
 namespace DiscreteCosineTransform
 {
-    cv::Mat DCT2(const QString& imagePath);
+    cv::Mat DCT2(const QString& imagePath, int F, int d);
 
-    cv::Mat IDCT2(const cv::Mat& matrix);
+    void IDCT2(cv::Mat& matrix, int F);
 }
 
 #endif //DCT2_H
