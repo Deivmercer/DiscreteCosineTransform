@@ -51,10 +51,10 @@ void MainWindow::on_runButton_clicked()
         return;
     }
 
-    cv::Mat c = DiscreteCosineTransform::DCT2(ui->filePathLineEdit->text(), F, d);
-    DiscreteCosineTransform::IDCT2(c, F);
+    std::vector<DiscreteCosineTransform::block> blocks = DiscreteCosineTransform::DCT2(ui->filePathLineEdit->text(), F, d);
+    cv::Mat result = IDCT2(blocks);
 
-    QImage image(c.data, c.cols, c.rows, QImage::Format_Grayscale8);
+    QImage image(result.data, result.cols, result.rows, QImage::Format_Grayscale8);
     QPixmap resultImage = QPixmap::fromImage(image);
     setPixmap(ui->resultPreviewLabel, resultImage);
 }
