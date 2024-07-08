@@ -7,40 +7,102 @@
 #include <opencv2/imgcodecs.hpp>
 #include <iostream>
 
-std::vector<DiscreteCosineTransform::block> DiscreteCosineTransform::DCT2(const QString& imagePath, const int F, const int d)
+using namespace DiscreteCosineTransform;
+
+DCT2::DCT2(const QString& imagePath)
 {
-    std::vector<block> blocks;
-    cv::Mat image = imread(imagePath.toStdString(), cv::IMREAD_GRAYSCALE);
-    if (image.empty())
+    loadImage(imagePath);
+}
+
+DCT2::~DCT2()
+{
+    blocks.clear();
+}
+
+void DCT2::loadImage(const QString& imagePath)
+{
+    originalImage = imread(imagePath.toStdString(), cv::IMREAD_GRAYSCALE);
+    if (originalImage.empty())
     {
         std::cerr << "Could not load image." << std::endl;
-        return blocks;
+        originalHeight = 0;
+        originalWidth = 0;
+        return;
     }
 
-    image.convertTo(image, CV_32FC1);
+    originalHeight = originalImage.rows;
+    originalWidth = originalImage.cols;
+
+    this->blockSize = blockSize;
+    this->threshold = threshold;
+}
+
+const cv::Mat& DCT2::getOriginalImage() const
+{
+    return originalImage;
+}
+
+const cv::Mat& DCT2::getResultImage() const
+{
+    return resultImage;
+}
+
+int DCT2::getOriginalHeight() const
+{
+    return originalHeight;
+}
+
+int DCT2::getOriginalWidth() const
+{
+    return originalWidth;
+}
+
+void DCT2::setBlockSize(const int blockSize)
+{
+    this->blockSize = blockSize;
+}
+
+int DCT2::getBlockSize() const
+{
+    return blockSize;
+}
+
+void DCT2::setThreshold(int threshold)
+{
+    this->threshold = threshold;
+}
+
+int DCT2::getThreshold() const
+{
+    return threshold;
+}
+
+void DCT2::performDCT2()
+{
+    originalImage.convertTo(resultImage, CV_32FC1);
 
     int x = 0, y = 0;
-    while (y < image.rows)
+    while (y < resultImage.rows)
     {
-        int rows = F;
-        if (x + F > image.cols)
-            rows = image.cols - x;
-        int cols = F;
-        if (y + F > image.rows)
-            cols = image.rows - y;
+        int rows = blockSize;
+        if (x + blockSize > resultImage.cols)
+            rows = resultImage.cols - x;
+        int cols = blockSize;
+        if (y + blockSize > resultImage.rows)
+            cols = resultImage.rows - y;
 
         cv::Mat submatrix = cv::Mat(rows, cols, CV_32FC1);
-        image(cv::Rect(x, y, rows, cols)).copyTo(submatrix);
+        resultImage(cv::Rect(x, y, rows, cols)).copyTo(submatrix);
 
-        if (submatrix.rows < F)
+        if (submatrix.rows < blockSize)
         {
-            int missingRows = F - submatrix.rows;
+            int missingRows = blockSize - submatrix.rows;
             cv::Mat newRow = cv::Mat::zeros(missingRows, submatrix.cols, CV_32FC1);
             vconcat(submatrix, newRow, submatrix);
         }
-        if (submatrix.cols < F)
+        if (submatrix.cols < blockSize)
         {
-            int missingCols = F - submatrix.cols;
+            int missingCols = blockSize - submatrix.cols;
             cv::Mat newColumn = cv::Mat::zeros(submatrix.rows, missingCols, CV_32FC1);
             hconcat(submatrix, newColumn, submatrix);
         }
@@ -60,27 +122,22 @@ std::vector<DiscreteCosineTransform::block> DiscreteCosineTransform::DCT2(const 
 
         for (int i = 0; i < submatrix.rows; ++i)
             for (int j = 0; j < submatrix.cols; ++j)
-                if (i + j > d)
+                if (i + j > threshold)
                     submatrix.at<float>(i, j) = 0.0f;
 
         block b = { submatrix, rows, cols };
         blocks.push_back(b);
-        x += F;
-        if (x >= image.cols)
+        x += blockSize;
+        if (x >= resultImage.cols)
         {
             x = 0;
-            y += F;
+            y += blockSize;
         }
     }
-
-    return blocks;
 }
 
-cv::Mat DiscreteCosineTransform::IDCT2(std::vector<block>& blocks)
+void DCT2::performIDCT2()
 {
-    int originalImageSize = 20;
-
-    cv::Mat result(originalImageSize, originalImageSize, CV_32FC1);
     int x = 0, y = 0;
     for (block& b : blocks)
     {
@@ -102,17 +159,21 @@ cv::Mat DiscreteCosineTransform::IDCT2(std::vector<block>& blocks)
                     tmp.at<float>(i, j) = 255.0f;
             }
 
-        tmp.copyTo(result(cv::Rect(x, y, tmp.cols, tmp.rows)));
+        tmp.copyTo(resultImage(cv::Rect(x, y, tmp.cols, tmp.rows)));
 
         x += tmp.cols;
-        if (x >= result.cols)
+        if (x >= resultImage.cols)
         {
             x = 0;
             y += tmp.rows;
         }
     }
 
-    result.convertTo(result, CV_8U);
+    resultImage.convertTo(resultImage, CV_8U);
+}
 
-    return result;
+void DCT2::reset()
+{
+    blocks.clear();
+    resultImage = cv::Mat();
 }

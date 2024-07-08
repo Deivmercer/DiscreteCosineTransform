@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "DiscreteCosineTransform.h"
 #include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -26,6 +25,7 @@ void MainWindow::on_selectImageButton_clicked()
     setImagePreview(filePath);
     ui->filePathLineEdit->setText(filePath);
     lastPath = getPath(filePath);
+    dct = DiscreteCosineTransform::DCT2(filePath);
 }
 
 void MainWindow::on_runButton_clicked()
@@ -51,10 +51,9 @@ void MainWindow::on_runButton_clicked()
         return;
     }
 
-    std::vector<DiscreteCosineTransform::block> blocks = DiscreteCosineTransform::DCT2(ui->filePathLineEdit->text(), F, d);
-    cv::Mat result = IDCT2(blocks);
+    performDCT(F, d);
 
-    QImage image(result.data, result.cols, result.rows, QImage::Format_Grayscale8);
+    QImage image(dct.getResultImage().data, dct.getOriginalWidth(), dct.getOriginalHeight(), QImage::Format_Grayscale8);
     QPixmap resultImage = QPixmap::fromImage(image);
     setPixmap(ui->resultPreviewLabel, resultImage);
 }
@@ -76,6 +75,15 @@ void MainWindow::setPixmap(QLabel* label, QPixmap pixmap)
     int imageWidth = label->width();
     int imageHeight = label->height();
     label->setPixmap(pixmap.scaled(imageWidth, imageHeight, Qt::KeepAspectRatio));
+}
+
+void MainWindow::performDCT(const int F, const int d)
+{
+    dct.reset();
+    dct.setBlockSize(F);
+    dct.setThreshold(d);
+    dct.performDCT2();
+    dct.performIDCT2();
 }
 
 QDir getPath(const QString& filePath)

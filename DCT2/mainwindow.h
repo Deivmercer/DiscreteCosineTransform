@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QDir>
 #include <QLabel>
+#include "DiscreteCosineTransform.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,9 +27,12 @@ class MainWindow : public QMainWindow
     private:
         void setImagePreview(const QString& path);
         void setPixmap(QLabel* label, QPixmap pixmap);
+        void performDCT(int F, int d);
         Ui::MainWindow *ui;
         QDir lastPath;
+        DiscreteCosineTransform::DCT2 dct;
 };
 
 QDir getPath(const QString& filePath);
+
 #endif // MAINWINDOW_H
