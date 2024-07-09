@@ -24,6 +24,8 @@ class MainWindow : public QMainWindow
 
         void on_runButton_clicked();
 
+        void on_filePathLineEdit_editingFinished();
+
     private:
         void setImagePreview(const QString& path);
         void setPixmap(QLabel* label, QPixmap pixmap);
