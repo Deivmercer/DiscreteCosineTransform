@@ -33,8 +33,12 @@ void DCT2::loadImage(const QString& imagePath)
     originalHeight = originalImage.rows;
     originalWidth = originalImage.cols;
 
-    this->blockSize = blockSize;
-    this->threshold = threshold;
+#ifdef QT_DEBUG
+    QFileInfo file(imagePath);
+    debugOutputPath = file.absoluteDir();
+    if (!debugOutputPath.exists("output") && !debugOutputPath.mkdir("output"))
+        qDebug("Could not create output folder");
+#endif
 }
 
 const cv::Mat& DCT2::getOriginalImage() const
@@ -93,6 +97,12 @@ void DCT2::performDCT2()
 
         cv::Mat submatrix = cv::Mat(rows, cols, CV_32FC1);
         resultImage(cv::Rect(x, y, rows, cols)).copyTo(submatrix);
+
+#ifdef QT_DEBUG
+        std::string filename = std::to_string(x) + std::to_string(y) + "_before" + ".bmp";
+        std::string test = debugOutputPath.path().toStdString() + "/output/" + filename;
+        imwrite(debugOutputPath.path().toStdString() + "/output/" + filename, submatrix);
+#endif
 
         if (submatrix.rows < blockSize)
         {
@@ -158,6 +168,11 @@ void DCT2::performIDCT2()
                 else if (tmp.at<float>(i, j) > 255.0f)
                     tmp.at<float>(i, j) = 255.0f;
             }
+
+#ifdef QT_DEBUG
+        std::string filename = std::to_string(x) + std::to_string(y) + "_after" + ".bmp";
+        imwrite(debugOutputPath.path().toStdString() + "/output/" + filename, tmp);
+#endif
 
         tmp.copyTo(resultImage(cv::Rect(x, y, tmp.cols, tmp.rows)));
 

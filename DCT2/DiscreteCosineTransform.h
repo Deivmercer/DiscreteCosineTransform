@@ -8,6 +8,10 @@
 #include <QString>
 #include <opencv2/core.hpp>
 
+#ifdef QT_DEBUG
+#include <QDir>
+#endif
+
 namespace DiscreteCosineTransform
 {
     struct block
@@ -33,6 +37,10 @@ namespace DiscreteCosineTransform
             int threshold = 0;
 
             std::vector<block> blocks;
+
+#ifdef QT_DEBUG
+            QDir debugOutputPath;
+#endif
 
         public:
             DCT2() = default;
