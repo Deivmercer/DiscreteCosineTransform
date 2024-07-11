@@ -11,7 +11,7 @@ namespace utils {
 	//creazione matrice
 	std::vector<std::vector<int>> creaMatrice(int size);
 	//funzione per dct2
-	std::vector<std::vector<int>> DCT2(const std::vector<std::vector<int>>& matrice, int size);
+	std::vector<std::vector<int>> DCT2(const std::vector<std::vector<int>>& matrice);
 }
 
 
