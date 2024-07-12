@@ -28,8 +28,7 @@ std::vector<std::vector<double> > utils::creaMatrice(int size) {
 
 //funzione dct
 std::vector<double> DCT1(const std::vector<double> &vettore, int index) {
-
-    int N = vettore.size();
+    double N = vettore.size();
     std::vector<double> vettorigno(N, 0.0);
     /*
      *  Non è necessario calcolare esplicitamente tutte le volte il prodotto scalare di wk
@@ -41,27 +40,25 @@ std::vector<double> DCT1(const std::vector<double> &vettore, int index) {
     // N: Il numero totale degli elementi nella sequenza di input
     // k: indice della dct (preso da index (mi dice a che vettore siamo))
 
-    //per ogni elemento i del vettore passato
-    for (int i = 0; i < N; ++i) {
-        //applico sommatoria cos
-        double somma = 0;
-        for(int j = 0; j < N; ++j) {
-            somma += cos((3.14*index*((2*i) + 1)/2*N) * vettore[i]);
-        }
-
-        if (index == 0) {
-            // dato che non voglio fare il controllo ogni volta conviene fare
-            // l'operazione prima delle chiamata solo per questo indice
-            vettorigno[i] = somma / N;
-            // (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N)
-        } else {
-            vettorigno[i] = somma / (N/2);
-            // (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N/2)
-        }
-
-        std::cout << std::to_string(vettorigno[i]) << " ";
+    //applico sommatoria cos
+    double somma = 0;
+    for (int i = 0; i < N; i++) {
+        double tempRes = 0;
+        tempRes = cos((3.14 * index * (((2*i) + 1)/(2 / N))) * vettore[i]);
+        somma = somma + tempRes;
     }
-    std::cout << std::endl;
+
+    std::cout << "SOMMA[" << index << "]: " << somma << std::endl;
+
+    if (index == 0) {
+        // dato che non voglio fare il controllo ogni volta conviene fare
+        // l'operazione prima delle chiamata solo per questo indice
+        vettorigno[index] = somma / N;
+        // (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N)
+    } else {
+        vettorigno[index] = somma / (N / 2);
+        // (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N/2)
+    }
     return vettorigno;
 }
 
@@ -85,9 +82,7 @@ std::vector<std::vector<double> > utils::DCT2(const std::vector<std::vector<doub
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             transposed[j][i] = new_matrix[i][j];
-            std::cout << std::to_string(transposed[j][i]) << " ";
         }
-        std::cout << std::endl;
     }
 
     std::cout << "APPLICO PER COLONNE" << std::endl;
