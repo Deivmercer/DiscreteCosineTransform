@@ -7,13 +7,13 @@ int main() {
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     //CREO LA MATRICE
-    std::vector<std::vector<int> > matrice = utils::creaMatrice(10);
+    std::vector<std::vector<double> > matrice = utils::creaMatrice(10);
 
     //INIZIO CRONOMETRO
     start = std::chrono::system_clock::now();
 
     //ESEGUO MIO DCT2
-    std::vector<std::vector<int> > result = utils::DCT2(matrice, 10);
+    std::vector<std::vector<double> > result = utils::DCT2(matrice);
 
     //FINE CRONOMETRO
     end = std::chrono::system_clock::now();
