@@ -1,21 +1,15 @@
-//
-// Created by David on 08/07/2024.
-//
-
 #include "utils.h"
 
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <ostream>
 
 //creazione matrice
 std::vector<std::vector<double> > utils::creaMatrice(int size) {
     std::vector<std::vector<double> > matrice(size, std::vector<double>(size));
     unsigned seed = time(0);
     srand(seed);
-
 
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
@@ -31,7 +25,6 @@ cv::Mat utils::creaMatriceCV(int size) {
     cv::Mat matrice = cv::Mat(size, size, CV_32F);
     unsigned seed = time(0);
     srand(seed);
-
 
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
@@ -60,24 +53,15 @@ std::vector<double> utils::DCT1(const std::vector<double>  &vettore) {
     for (int k = 0; k < N; k++) {
         somma = 0;
         for (int j = 0; j < N; j++) {
-            //applico sommatoria cos
-            //somma += cos(M_PI * i * ((2 * j + 1) / (2 * N))) * vettore[j];
-            //somma += cos((M_PI * i * (((2 * j) + 1) / (2 * N)))) * vettore[j];
+            //applico sommatoria cos;
             somma += cos((M_PI * k) * (((2 * j) + 1) / (2 * N))) * vettore[j];
         }
         if (k == 0) {
-            //ak = (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N)
-            //result[k] = somma / N;
             result[k] = sqrt(1 / N) * somma;
         } else {
-            //ak =  (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N/2)
-            //result[k] = somma / (N / 2);
             result[k] = sqrt(2 / N) * somma;
         }
     }
-    //somma += cos(M_PI * i * ((2 * j + 1) / (2 * N))) * vettore[j];
-
-
     return result;
 }
 
