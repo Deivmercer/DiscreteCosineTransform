@@ -26,6 +26,22 @@ std::vector<std::vector<double> > utils::creaMatrice(int size) {
     return matrice;
 }
 
+//creazione matrice
+cv::Mat utils::creaMatriceCV(int size) {
+    cv::Mat matrice = cv::Mat(size, size, CV_32F);
+    unsigned seed = time(0);
+    srand(seed);
+
+
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            matrice.at<float>(i, j) = rand() % 256;
+        }
+    }
+
+    return matrice;
+}
+
 //funzione dct
 std::vector<double> utils::DCT1(const std::vector<double>  &vettore) {
     double N = vettore.size();
