@@ -30,6 +30,7 @@ std::vector<std::vector<double> > utils::creaMatrice(int size) {
 std::vector<double> DCT1(const std::vector<double> &vettore, int index) {
     double N = vettore.size();
     std::vector<double> vettorigno(N, 0.0);
+    double somma = 0;
     /*
      *  Non è necessario calcolare esplicitamente tutte le volte il prodotto scalare di wk
      *  con se stesso per capire quale valore mettere. È possibile essere più efficienti
@@ -40,25 +41,27 @@ std::vector<double> DCT1(const std::vector<double> &vettore, int index) {
     // N: Il numero totale degli elementi nella sequenza di input
     // k: indice della dct (preso da index (mi dice a che vettore siamo))
 
-    //applico sommatoria cos
-    double somma = 0;
-    for (int i = 0; i < N; i++) {
-        double tempRes = 0;
-        tempRes = cos((3.14 * index * (((2*i) + 1)/(2 / N))) * vettore[i]);
-        somma = somma + tempRes;
+    for (int k = 0; k < N; k++) {
+        somma = 0;
+        for (int j = 0; j < N; j++) {
+            //applico sommatoria cos
+            //somma += cos(M_PI * i * ((2 * j + 1) / (2 * N))) * vettore[j];
+            //somma += cos((M_PI * i * (((2 * j) + 1) / (2 * N)))) * vettore[j];
+            somma += cos((M_PI * k) * (((2 * j) + 1) / (2 * N))) * vettore[j];
+        }
+        if (k == 0) {
+            //ak = (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N)
+            //vettorigno[k] = somma / N;
+            vettorigno[k] = sqrt(1/N) * somma;
+        } else {
+            //ak =  (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N/2)
+            //vettorigno[k] = somma / (N / 2);
+            vettorigno[k] = sqrt(2/N) * somma;
+        }
     }
+    //somma += cos(M_PI * i * ((2 * j + 1) / (2 * N))) * vettore[j];
 
-    std::cout << "SOMMA[" << index << "]: " << somma << std::endl;
 
-    if (index == 0) {
-        // dato che non voglio fare il controllo ogni volta conviene fare
-        // l'operazione prima delle chiamata solo per questo indice
-        vettorigno[index] = somma / N;
-        // (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N)
-    } else {
-        vettorigno[index] = somma / (N / 2);
-        // (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N/2)
-    }
     return vettorigno;
 }
 

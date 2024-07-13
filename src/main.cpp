@@ -7,12 +7,14 @@ int main() {
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     //CREO LA MATRICE
-    std::vector<std::vector<double> > matrice = utils::creaMatrice(10);
+    std::vector<std::vector<double> > matrice = utils::creaMatrice(8);
     std::cout << "matrix: " << std::endl;
     for (int i = 0; i < matrice.size(); ++i) {
+        std::cout << "[";
         for (int j = 0; j < matrice[i].size(); ++j) {
-            std::cout << matrice[i][j] << " ";
+            std::cout << matrice[i][j] << ",";
         }
+        std::cout << "],";
         std::cout << std::endl;
     }
 
