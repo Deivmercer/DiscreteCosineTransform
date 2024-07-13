@@ -7,18 +7,15 @@
 
 #include <QString>
 #include <opencv2/core.hpp>
-
-#ifdef QT_DEBUG
 #include <QDir>
-#endif
 
 namespace DiscreteCosineTransform
 {
     struct block
     {
         cv::Mat data;
-        int originalHeight;
-        int originalWidth;
+        int originalX;
+        int originalY;
     };
 
     class DCT2
@@ -38,9 +35,9 @@ namespace DiscreteCosineTransform
 
             std::vector<block> blocks;
 
-#ifdef QT_DEBUG
-            QDir debugOutputPath;
-#endif
+            std::string resultFilePath;
+
+            QDir outputPath;
 
         public:
             DCT2() = default;
@@ -66,6 +63,8 @@ namespace DiscreteCosineTransform
             void setThreshold(int threshold);
 
             int getThreshold() const;
+
+            std::string getResultFilePath();
 
             void performDCT2();
 

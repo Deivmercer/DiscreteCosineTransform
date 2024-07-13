@@ -6,6 +6,7 @@
 
 #include <opencv2/imgcodecs.hpp>
 #include <iostream>
+#include <chrono>
 
 using namespace DiscreteCosineTransform;
 
@@ -35,8 +36,8 @@ void DCT2::loadImage(const QString& imagePath)
 
 #ifdef QT_DEBUG
     QFileInfo file(imagePath);
-    debugOutputPath = file.absoluteDir();
-    if (!debugOutputPath.exists("output") && !debugOutputPath.mkdir("output"))
+    outputPath = file.absoluteDir();
+    if (!outputPath.exists("output") && !outputPath.mkdir("output"))
         qDebug("Could not create output folder");
 #endif
 }
@@ -71,6 +72,11 @@ int DCT2::getBlockSize() const
     return blockSize;
 }
 
+std::string DCT2::getResultFilePath()
+{
+    return resultFilePath;
+}
+
 void DCT2::setThreshold(int threshold)
 {
     this->threshold = threshold;
@@ -88,55 +94,39 @@ void DCT2::performDCT2()
     int x = 0, y = 0;
     while (y < resultImage.rows)
     {
-        int rows = blockSize;
-        if (x + blockSize > resultImage.cols)
-            rows = resultImage.cols - x;
-        int cols = blockSize;
-        if (y + blockSize > resultImage.rows)
-            cols = resultImage.rows - y;
-
-        cv::Mat submatrix = cv::Mat(rows, cols, CV_32FC1);
-        resultImage(cv::Rect(x, y, rows, cols)).copyTo(submatrix);
+        if (x + blockSize - 1 < originalWidth && y + blockSize - 1 < originalHeight)
+        {
+            cv::Mat submatrix = cv::Mat(blockSize, blockSize, CV_32FC1);
+            resultImage(cv::Rect(x, y, blockSize, blockSize)).copyTo(submatrix);
 
 #ifdef QT_DEBUG
-        std::string filename = std::to_string(x) + std::to_string(y) + "_before" + ".bmp";
-        std::string test = debugOutputPath.path().toStdString() + "/output/" + filename;
-        imwrite(debugOutputPath.path().toStdString() + "/output/" + filename, submatrix);
+            std::string filename = std::to_string(x) + std::to_string(y) + "_before" + ".bmp";
+            std::string test = outputPath.path().toStdString() + "/output/" + filename;
+            imwrite(outputPath.path().toStdString() + "/output/" + filename, submatrix);
 #endif
 
-        if (submatrix.rows < blockSize)
-        {
-            int missingRows = blockSize - submatrix.rows;
-            cv::Mat newRow = cv::Mat::zeros(missingRows, submatrix.cols, CV_32FC1);
-            vconcat(submatrix, newRow, submatrix);
-        }
-        if (submatrix.cols < blockSize)
-        {
-            int missingCols = blockSize - submatrix.cols;
-            cv::Mat newColumn = cv::Mat::zeros(submatrix.rows, missingCols, CV_32FC1);
-            hconcat(submatrix, newColumn, submatrix);
-        }
+            if (submatrix.rows % 2 != 0)
+            {
+                cv::Mat newRow = cv::Mat::zeros(1, submatrix.cols, CV_32FC1);
+                vconcat(submatrix, newRow, submatrix);
+            }
+            if (submatrix.cols % 2 != 0)
+            {
+                cv::Mat newColumn = cv::Mat::zeros(submatrix.rows, 1, CV_32FC1);
+                hconcat(submatrix, newColumn, submatrix);
+            }
 
-        if (submatrix.rows % 2 != 0)
-        {
-            cv::Mat newRow = cv::Mat::zeros(1, submatrix.cols, CV_32FC1);
-            vconcat(submatrix, newRow, submatrix);
-        }
-        if (submatrix.cols % 2 != 0)
-        {
-            cv::Mat newColumn = cv::Mat::zeros(submatrix.rows, 1, CV_32FC1);
-            hconcat(submatrix, newColumn, submatrix);
+            dct(submatrix, submatrix);
+
+            for (int i = 0; i < submatrix.rows; ++i)
+                for (int j = 0; j < submatrix.cols; ++j)
+                    if (i + j > threshold)
+                        submatrix.at<float>(i, j) = 0.0f;
+
+            block b = { submatrix, x, y };
+            blocks.push_back(b);
         }
 
-        dct(submatrix, submatrix);
-
-        for (int i = 0; i < submatrix.rows; ++i)
-            for (int j = 0; j < submatrix.cols; ++j)
-                if (i + j > threshold)
-                    submatrix.at<float>(i, j) = 0.0f;
-
-        block b = { submatrix, rows, cols };
-        blocks.push_back(b);
         x += blockSize;
         if (x >= resultImage.cols)
         {
@@ -148,15 +138,22 @@ void DCT2::performDCT2()
 
 void DCT2::performIDCT2()
 {
-    int x = 0, y = 0;
+    int width = originalWidth;
+    if (width % blockSize != 0)
+        width = width - (width % blockSize);
+    int height = originalHeight;
+    if (height % blockSize != 0)
+        height = height - (height % blockSize);
+    resultImage = cv::Mat(height, width, CV_32FC1);
+
     for (block& b : blocks)
     {
         dct(b.data, b.data, cv::DCT_INVERSE);
 
-        cv::Mat tmp(b.originalHeight, b.originalWidth, CV_32FC1);
+        cv::Mat tmp(blockSize,blockSize, CV_32FC1);
 
-        if (b.data.rows != b.originalHeight || b.data.cols != b.originalWidth)
-            b.data(cv::Rect(0, 0, b.originalHeight, b.originalWidth)).copyTo(tmp);
+        if (b.data.rows != blockSize || b.data.cols != blockSize)
+            b.data(cv::Rect(0, 0, blockSize, blockSize)).copyTo(tmp);
         else
             b.data.copyTo(tmp);
 
@@ -170,21 +167,17 @@ void DCT2::performIDCT2()
             }
 
 #ifdef QT_DEBUG
-        std::string filename = std::to_string(x) + std::to_string(y) + "_after" + ".bmp";
-        imwrite(debugOutputPath.path().toStdString() + "/output/" + filename, tmp);
+        std::string filename = std::to_string(b.originalX) + std::to_string(b.originalY) + "_after" + ".bmp";
+        imwrite(outputPath.path().toStdString() + "/output/" + filename, tmp);
 #endif
 
-        tmp.copyTo(resultImage(cv::Rect(x, y, tmp.cols, tmp.rows)));
-
-        x += tmp.cols;
-        if (x >= resultImage.cols)
-        {
-            x = 0;
-            y += tmp.rows;
-        }
+        tmp.copyTo(resultImage(cv::Rect(b.originalX, b.originalY, blockSize, blockSize)));
     }
 
     resultImage.convertTo(resultImage, CV_8U);
+    uint64_t ms = duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    resultFilePath = outputPath.path().toStdString() + std::to_string(ms) + ".bmp";
+    imwrite(resultFilePath, resultImage);
 }
 
 void DCT2::reset()

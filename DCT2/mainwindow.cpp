@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 #include <QFileDialog>
 #include <QToolTip>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -75,8 +76,7 @@ void MainWindow::on_runButton_clicked()
 
     performDCT(F, d);
 
-    QImage image(dct.getResultImage().data, dct.getOriginalWidth(), dct.getOriginalHeight(), QImage::Format_Grayscale8);
-    QPixmap resultImage = QPixmap::fromImage(image);
+    QPixmap resultImage(dct.getResultFilePath().c_str());
     setPixmap(ui->resultPreviewLabel, resultImage);
 }
 
