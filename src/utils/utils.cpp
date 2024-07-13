@@ -27,9 +27,9 @@ std::vector<std::vector<double> > utils::creaMatrice(int size) {
 }
 
 //funzione dct
-std::vector<double> DCT1(const std::vector<double> &vettore, int index) {
+std::vector<double> utils::DCT1(const std::vector<double>  &vettore) {
     double N = vettore.size();
-    std::vector<double> vettorigno(N, 0.0);
+    std::vector<double> result(N, 0.0);
     double somma = 0;
     /*
      *  Non è necessario calcolare esplicitamente tutte le volte il prodotto scalare di wk
@@ -51,18 +51,18 @@ std::vector<double> DCT1(const std::vector<double> &vettore, int index) {
         }
         if (k == 0) {
             //ak = (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N)
-            //vettorigno[k] = somma / N;
-            vettorigno[k] = sqrt(1/N) * somma;
+            //result[k] = somma / N;
+            result[k] = sqrt(1 / N) * somma;
         } else {
             //ak =  (cos(pi*k*((2*i) + 1)/2*N)) * vettore[i] / (N/2)
-            //vettorigno[k] = somma / (N / 2);
-            vettorigno[k] = sqrt(2/N) * somma;
+            //result[k] = somma / (N / 2);
+            result[k] = sqrt(2 / N) * somma;
         }
     }
     //somma += cos(M_PI * i * ((2 * j + 1) / (2 * N))) * vettore[j];
 
 
-    return vettorigno;
+    return result;
 }
 
 //funzione per dct2
@@ -70,23 +70,13 @@ std::vector<std::vector<double> > utils::DCT2(const std::vector<std::vector<doub
     int N = matrice.size();
     std::vector<std::vector<double> > new_matrix(N, std::vector<double>(N));
 
-    std::cout << "APPLICO PER RIGHE" << std::endl;
     //applico dct1 per righe
     for (int i = 0; i < N; ++i) {
-        std::vector<double> row_dct = DCT1(matrice[i], i);
+        std::vector<double> row_dct = DCT1(matrice[i]);
         for (int j = 0; j < N; ++j) {
             new_matrix[i][j] = row_dct[j];
         }
     }
-
-    for (int i = 0; i < new_matrix.size(); ++i) {
-        for (int j = 0; j < new_matrix[i].size(); ++j) {
-            std::cout << new_matrix[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    std::cout << "INVERTO" << std::endl;
     //inverto righe e colonne. necessario per poter lavorare come fatto sopra
     std::vector<std::vector<double> > transposed(N, std::vector<double>(N, 0.0));
     for (int i = 0; i < N; ++i) {
@@ -95,27 +85,12 @@ std::vector<std::vector<double> > utils::DCT2(const std::vector<std::vector<doub
         }
     }
 
-    for (int i = 0; i < transposed.size(); ++i) {
-        for (int j = 0; j < transposed[i].size(); ++j) {
-            std::cout << transposed[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    std::cout << "APPLICO PER COLONNE" << std::endl;
     //applico dct1 per colonne
     for (int i = 0; i < N; ++i) {
-        std::vector<double> col_dct = DCT1(transposed[i], i);
+        std::vector<double> col_dct = DCT1(transposed[i]);
         for (int j = 0; j < N; ++j) {
             new_matrix[j][i] = col_dct[j];
         }
-    }
-
-    for (int i = 0; i < new_matrix.size(); ++i) {
-        for (int j = 0; j < new_matrix[i].size(); ++j) {
-            std::cout << new_matrix[i][j] << " ";
-        }
-        std::cout << std::endl;
     }
 
     return new_matrix;
