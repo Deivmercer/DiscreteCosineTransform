@@ -53,7 +53,13 @@ void MainWindow::on_runButton_clicked()
     if (F <= 0)
     {
         QToolTip::showText(ui->blockSizeLabel->mapToGlobal(QPoint()), "Block size must be greater than 0.", ui->blockSizeLabel);
-        qDebug("Block size not set.");
+        qDebug("Block size must be greater than 0.");
+        return;
+    }
+    if (F > dct.getOriginalHeight() || F > dct.getOriginalWidth())
+    {
+        QToolTip::showText(ui->blockSizeLabel->mapToGlobal(QPoint()), "Block size must be smaller than the image width and height.", ui->blockSizeLabel);
+        qDebug("Block size must be smaller than the image width and height.");
         return;
     }
 
