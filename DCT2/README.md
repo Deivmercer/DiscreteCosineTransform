@@ -1,1 +1,0 @@
-# Metodi-del-Calcolo-Scientifico-2
